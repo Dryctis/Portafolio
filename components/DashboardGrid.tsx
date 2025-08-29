@@ -7,7 +7,7 @@ import StatCard from "@/components/StatCard";
 import ExperienceCard from "@/components/ExperienceCard";
 import Image from "next/image";
 import Link from "next/link";
-import ClientTechStrip from "@/components/ClientTechStrip"; // ⬅️ usar el wrapper client-only
+import ClientTechStrip from "@/components/ClientTechStrip";
 
 import { site } from "@/data/site";
 import { projects } from "@/data/projects";
@@ -47,42 +47,57 @@ const TECH_COLORS: Record<string, string> = {
   selenium: "#43B02A",
   expressjs: "#000000",
   postman: "#ff6c37",
+  // bonus:
+  net: "#512bd4",
 };
 
 function norm(label: string) {
-  return label.toLowerCase().replaceAll(/\s+/g, "").replaceAll(/[.&]/g, "").replaceAll(/-+/g, "");
+  return label
+    .toLowerCase()
+    .replaceAll(/\s+/g, "")
+    .replaceAll(/[.&]/g, "")
+    .replaceAll(/-+/g, "");
 }
-
 function hexToRgba(hex: string, alpha = 1): string {
   const h = hex.replace("#", "");
-  const bigint = h.length === 3 ? parseInt(h.split("").map((ch) => ch + ch).join(""), 16) : parseInt(h, 16);
+  const bigint =
+    h.length === 3
+      ? parseInt(h.split("").map((ch) => ch + ch).join(""), 16)
+      : parseInt(h, 16);
   const r = (bigint >> 16) & 255;
   const g = (bigint >> 8) & 255;
   const b = bigint & 255;
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/** Estilo del chip según tecnología – solo usado en Stack */
+/* ---------- Chips morados sólo para "Sobre mí" (sin fijar color de texto) ---------- */
+const PURPLE = "#7c3aed";
+function purpleChipStyle(): React.CSSProperties {
+  return {
+    backgroundColor: hexToRgba(PURPLE, 0.22),
+    borderColor: hexToRgba(PURPLE, 0.45),
+    fontWeight: 600,
+  };
+}
+
+/* ---------- Chips del Stack (sin fijar color de texto) ---------- */
 function chipStyle(label: string): React.CSSProperties {
   const key = norm(label);
-  if (!TECH_COLORS[key]) return {};
   const base = TECH_COLORS[key];
+  if (!base) return {};
   return {
-    backgroundColor: hexToRgba(base, 0.24),
-    borderColor: hexToRgba(base, 0.6),
-    color: "var(--color-foreground)",
+    backgroundColor: hexToRgba(base, 0.22),
+    borderColor: hexToRgba(base, 0.45),
     fontWeight: 600,
   };
 }
 
 export default function DashboardGrid() {
   return (
-    <div className="relative neon-surface neon-grid neon-vignette">
-      {/* Un poco menos padding para acercarlo al navbar */}
+    <div className="relative">
       <div className="relative z-[1] mx-auto max-w-[115rem] 2xl:max-w-[120rem] px-6 lg:px-10 pt-6 lg:pt-8 pb-10 lg:pb-12">
-
-        {/* 🔝 Carrusel compacto (client-only) */}
-        <div className="mb-3 rounded-lg border border-border bg-card/60 px-2 py-1">
+        {/* Carrusel */}
+        <div className="mb-3 rounded-lg border border-transparent bg-transparent px-2 py-1">
           <ClientTechStrip
             speed={28}
             direction="left"
@@ -90,7 +105,7 @@ export default function DashboardGrid() {
             gap={28}
             pauseOnHover
             fadeOut
-            fadeOutColor="var(--color-background)"
+            fadeOutColor="transparent"
             ariaLabel="Tecnologías principales"
           />
         </div>
@@ -105,11 +120,16 @@ export default function DashboardGrid() {
             <div className="xl:sticky xl:top-24 grid gap-6">
               <ProfileCard />
 
-              <SectionCard id="sobre-mi" className="scroll-mt-24" title="Sobre mí">
+              <SectionCard
+                id="sobre-mi"
+                title="Sobre mí"
+                className="scroll-mt-24 bg-card/50 border-border/40"
+              >
                 <p className="text-sm text-[color:var(--color-muted)] leading-relaxed">
-                  Desarrollador web full-stack, proactivo y autodidacta. Entrego valor con
-                  código simple y mantenible, comunico claro y me hago cargo del ciclo
-                  completo. Aprendo rápido y busco mejorar continuamente procesos.
+                  Desarrollador web full-stack, proactivo y autodidacta. Entrego
+                  valor con código simple y mantenible, comunico claro y me hago
+                  cargo del ciclo completo. Aprendo rápido y busco mejorar
+                  continuamente procesos.
                 </p>
 
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
@@ -123,7 +143,8 @@ export default function DashboardGrid() {
                   ].map((tag) => (
                     <span
                       key={tag}
-                      className="rounded-md border border-border bg-card/60 px-2.5 py-1 text-foreground/80 hover:bg-card/80 transition dark:bg-white/5 dark:border-white/10 dark:text-white/80 dark:hover:bg-white/8"
+                      className="chip inline-flex items-center rounded-md border px-2.5 py-1 font-medium transition"
+                      style={purpleChipStyle()}
                     >
                       {tag}
                     </span>
@@ -140,15 +161,15 @@ export default function DashboardGrid() {
           >
             <SectionCard
               id="proyectos"
-              className="scroll-mt-24"
               title="Proyectos"
               subtitle="Casos reales con código y despliegue"
+              className="scroll-mt-24 bg-card/50 border-border/40"
             >
               <div className="grid sm:grid-cols-2 gap-5">
                 {projects.slice(0, 3).map((p, idx) => (
                   <article
                     key={p.slug ?? p.title}
-                    className="group rounded-xl border border-border bg-card p-4 shadow-[0_8px_24px_rgb(2_6_23_/_0.06)] dark:shadow-none hover:ring-1 hover:ring-[var(--color-accent)]/40 transition"
+                    className="group rounded-xl border border-border/40 bg-card/45 p-4 shadow-[0_8px_24px_rgb(2_6_23_/_0.06)] dark:shadow-none hover:ring-1 hover:ring-[var(--color-accent)]/40 transition"
                   >
                     {p.image && (
                       <div className="relative mb-3 aspect-[16/9] w-full overflow-hidden rounded-lg">
@@ -163,7 +184,9 @@ export default function DashboardGrid() {
                       </div>
                     )}
                     <h4 className="font-medium">{p.title}</h4>
-                    <p className="mt-1 text-sm text-[color:var(--color-muted)]">{p.blurb}</p>
+                    <p className="mt-1 text-sm text-[color:var(--color-muted)]">
+                      {p.blurb}
+                    </p>
 
                     <div className="mt-3 flex gap-3">
                       {p.live && (
@@ -201,8 +224,16 @@ export default function DashboardGrid() {
             </SectionCard>
 
             <div className="grid grid-cols-3 gap-5">
-              <StatCard value={site.years} label="Años" />
-              <StatCard value={site.deliveries} label="Proyectos" />
+              <StatCard
+                value={site.years}
+                label="Años"
+                className="bg-card/45 border-border/40"
+              />
+              <StatCard
+                value={site.deliveries}
+                label="Proyectos"
+                className="bg-card/45 border-border/40"
+              />
             </div>
           </section>
 
@@ -216,9 +247,9 @@ export default function DashboardGrid() {
 
               <SectionCard
                 id="stack"
-                className="scroll-mt-24"
                 title="Stack"
                 subtitle="Tecnologías, lenguajes y herramientas que uso"
+                className="scroll-mt-24 bg-card/50 border-border/40"
               >
                 <div className="space-y-5">
                   {Object.entries(stack).map(([grupo, items]) => (
@@ -230,7 +261,7 @@ export default function DashboardGrid() {
                         {items.map((t) => (
                           <span
                             key={`${grupo}-${t}`}
-                            className="rounded-md border px-2.5 py-1 text-xs font-medium transition"
+                            className="chip inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-medium transition"
                             style={chipStyle(t)}
                           >
                             {t}

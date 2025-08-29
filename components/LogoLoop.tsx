@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 /* ----------------------------- Tipos de logos ----------------------------- */
 type NodeLogo = { node: React.ReactNode; title: string; href?: string };
@@ -46,7 +46,7 @@ export default function LogoLoop({
   scaleOnHover = false,
   fadeOut = true,
   fadeOutColor = "transparent",
-  ariaLabel,
+  ariaLabel = "Clientes",
   className = "",
 }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);   // contenedor que se mueve
@@ -64,12 +64,12 @@ export default function LogoLoop({
     };
     measure();
 
-    // Evita SSR issues: sólo en cliente
     if (typeof ResizeObserver !== "undefined" && seqRef.current) {
       const ro = new ResizeObserver(measure);
       ro.observe(seqRef.current);
       return () => ro.disconnect();
     }
+    return;
   }, [logos, gap, logoHeight]);
 
   // Animación continua con rAF (sin reiniciar keyframes)
@@ -89,9 +89,10 @@ export default function LogoLoop({
         offset = (offset + dir * speed * dt) % seqWidth;
         if (offset < 0) offset += seqWidth; // mantener positivo
 
-        if (trackRef.current) {
+        const el = trackRef.current;
+        if (el) {
           // 3D para forzar aceleración por GPU y suavidad
-          trackRef.current.style.transform = `translate3d(-${offset}px, 0, 0)`;
+          el.style.transform = `translate3d(-${offset}px, 0, 0)`;
         }
       }
       raf = requestAnimationFrame(tick);
@@ -99,13 +100,11 @@ export default function LogoLoop({
 
     raf = requestAnimationFrame(tick);
     return () => {
-      if (raf) cancelAnimationFrame(raf);
+      if (raf !== null) cancelAnimationFrame(raf);
     };
   }, [speed, direction, seqWidth]);
 
-  // Secuencia duplicada A + A
-  const doubled = useMemo(() => [...logos, ...logos], [logos]);
-
+  // (No necesitamos la constante `doubled`; renderizamos A y A duplicada explícitamente)
   return (
     <div
       className={[
@@ -158,7 +157,12 @@ function LogoItem({
   height: number;
   scaleOnHover?: boolean;
 }) {
-  const content = isImg(logo) ? (
+  const isImage = isImg(logo);
+  const href = logo.href; // presente en ambos tipos
+  const aria = isImage ? logo.alt : logo.title;
+  const titleAttr = isImage ? (logo.title ?? logo.alt) : logo.title;
+
+  const content = isImage ? (
     <Image
       src={logo.src}
       alt={logo.alt}
@@ -183,15 +187,15 @@ function LogoItem({
     scaleOnHover ? "transition-transform hover:scale-[1.06]" : "",
   ].join(" ");
 
-  return (logo as any).href ? (
+  return href ? (
     <a
-      href={(logo as any).href}
+      href={href}
       target="_blank"
       rel="noreferrer"
       className={cls}
       style={{ height }}
-      aria-label={(logo as any).title || (logo as any).alt}
-      title={(logo as any).title || (logo as any).alt}
+      aria-label={aria}
+      title={titleAttr}
       draggable={false}
     >
       {content}

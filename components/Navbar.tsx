@@ -30,11 +30,13 @@ export default function Navbar() {
 
   // ------ Indicador animado (desktop) ------
   const deskLinksWrapRef = useRef<HTMLDivElement>(null);
-  const [indicator, setIndicator] = useState<{ left: number; width: number; visible: boolean }>({
-    left: 0,
-    width: 0,
-    visible: false,
-  });
+  const [indicator, setIndicator] = useState<{ left: number; width: number; visible: boolean }>(
+    {
+      left: 0,
+      width: 0,
+      visible: false,
+    }
+  );
 
   const updateIndicator = useCallback(() => {
     if (!shouldRender) return;
@@ -144,7 +146,7 @@ export default function Navbar() {
           {/* Marca */}
           <Link
             href={DASHBOARD_PATH} // -> dashboard
-            className="font-semibold tracking-tight text-[color:var(--color-foreground)]"
+            className="min-w-0 font-semibold tracking-tight text-[color:var(--color-foreground)]"
             onClick={closeMobile}
             aria-label="Ir al dashboard"
             prefetch={false}
@@ -176,7 +178,7 @@ export default function Navbar() {
           </div>
 
           {/* Acciones derecha */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0">
             <ThemeToggle />
             {/* Hamburguesa (móvil) */}
             <button
@@ -184,7 +186,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen((v) => !v)}
               aria-label="Abrir menú"
               aria-expanded={mobileOpen}
-              className="md:hidden inline-flex items-center justify-center rounded-md p-2
+              className="md:hidden shrink-0 inline-flex h-10 w-10 items-center justify-center rounded-md p-2
                          text-[color:var(--color-foreground)]/80 hover:text-[color:var(--color-foreground)]
                          hover:bg-[color:var(--color-card)]/60 transition"
             >

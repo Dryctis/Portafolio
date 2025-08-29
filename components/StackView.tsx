@@ -49,25 +49,41 @@ function norm(label: string) {
 }
 function hexToRgba(hex: string, a = 1) {
   const h = hex.replace("#", "");
-  const v = h.length === 3
-    ? parseInt(h.split("").map(c => c + c).join(""), 16)
-    : parseInt(h, 16);
-  const r = (v >> 16) & 255, g = (v >> 8) & 255, b = v & 255;
+  const v =
+    h.length === 3
+      ? parseInt(h.split("").map((c) => c + c).join(""), 16)
+      : parseInt(h, 16);
+  const r = (v >> 16) & 255,
+    g = (v >> 8) & 255,
+    b = v & 255;
   return `rgba(${r}, ${g}, ${b}, ${a})`;
 }
+function isVeryLight(hex: string) {
+  const h = hex.replace("#", "");
+  const v =
+    h.length === 3
+      ? parseInt(h.split("").map((c) => c + c).join(""), 16)
+      : parseInt(h, 16);
+  const r = (v >> 16) & 255,
+    g = (v >> 8) & 255,
+    b = v & 255;
+  const L = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255;
+  return L > 0.9;
+}
+
+/* ✅ Fondo/borde por tech; el color del texto lo maneja SectionCard */
 function chipStyle(label: string): React.CSSProperties {
   const key = norm(label);
-  if (!TECH_COLORS[key]) return {};
-  const base = TECH_COLORS[key];
+  let base = TECH_COLORS[key];
+  if (!base || isVeryLight(base)) base = "#000000"; // fallback
   return {
     backgroundColor: hexToRgba(base, 0.16),
     borderColor: hexToRgba(base, 0.55),
-    color: "var(--color-foreground)",
     fontWeight: 600,
   };
 }
 
-/* ---------- Modelo de datos para la vista detallada ---------- */
+/* ---------- Modelo de datos ---------- */
 type Level = 1 | 2 | 3 | 4 | 5;
 type Tech = {
   name: string;
@@ -79,16 +95,14 @@ type Tech = {
     | "DevOps"
     | "Testing / QA"
     | "Herramientas";
-  level: Level;         // 1-5
-  years?: number;       // años aproximados
-  use: string;          // en qué la usas
-  tags?: string[];      // etiquetas buscables
+  level: Level;
+  years?: number;
+  use: string;
+  tags?: string[];
   links?: { label: string; href: string }[];
 };
 
-// Reemplaza TODO el const DATA por este:
 const DATA: Tech[] = [
-  // Lenguajes
   { name: "TypeScript", category: "Lenguajes", level: 3, years: 2, use: "Tipado robusto en front/back con Node y Next.", tags: ["typescript", "ts"] },
   { name: "JavaScript", category: "Lenguajes", level: 3, years: 2, use: "Web apps, tooling y scripts.", tags: ["js"] },
   { name: "C#", category: "Lenguajes", level: 4, years: 3, use: "APIs y servicios con .NET/ASP.NET.", tags: ["csharp", ".net"] },
@@ -96,29 +110,23 @@ const DATA: Tech[] = [
   { name: "HTML", category: "Lenguajes", level: 5, years: 5, use: "Maquetación semántica.", tags: ["html5"] },
   { name: "CSS / Tailwind", category: "Lenguajes", level: 4, years: 3, use: "UI rápida y consistente con Tailwind CSS.", tags: ["css", "tailwind"] },
 
-  // Frontend
   { name: "React", category: "Frontend", level: 3, years: 1, use: "Interfaces reactivas, estado y hooks.", tags: ["react"] },
   { name: "Next.js", category: "Frontend", level: 3, years: 1, use: "SSR/SSG, rutas app router, optimización.", tags: ["nextjs"] },
   { name: "Angular", category: "Frontend", level: 4, years: 1, use: "Apps modulares, RxJS, forms.", tags: ["angular"] },
 
-  // Backend / APIs
   { name: "Node.js", category: "Backend / APIs", level: 4, years: 2, use: "APIs con Express, utilidades CLI.", tags: ["node"] },
   { name: "Express.js", category: "Backend / APIs", level: 4, years: 2, use: "Routing y middlewares livianos.", tags: ["express"] },
   { name: "ASP.NET Core", category: "Backend / APIs", level: 4, years: 3, use: "APIs REST robustas, MVC, filtros.", tags: ["aspnet", "dotnet"] },
   { name: "Auth (JWT / OAuth2)", category: "Backend / APIs", level: 3, years: 1, use: "Autenticación/Autorización para SPAs y APIs.", tags: ["jwt", "oauth2"] },
 
-  // Bases de datos
   { name: "SQL Server", category: "Bases de datos", level: 4, years: 3, use: "OLTP clásico, vistas y SPs.", tags: ["sqlserver"] },
   { name: "PostgreSQL", category: "Bases de datos", level: 3, years: 2, use: "Relacional open-source, funciones y extensiones.", tags: ["postgresql", "psql"] },
 
-  // DevOps
   { name: "Docker", category: "DevOps", level: 2, years: 1, use: "Contenerización para dev y despliegues.", tags: ["docker"] },
   { name: "Railway / Vercel / Netlify", category: "DevOps", level: 3, years: 2, use: "Hosting de APIs/Front con previews y envs.", tags: ["railway", "vercel", "netlify"] },
 
-  // Testing / QA
   { name: "Postman", category: "Testing / QA", level: 4, years: 2, use: "Colecciones de pruebas de API y documentación.", tags: ["postman"] },
 
-  // Herramientas
   { name: "GitHub", category: "Herramientas", level: 4, years: 3, use: "Flujo Git, PRs, issues y proyectos.", tags: ["github"] },
 ];
 
@@ -148,8 +156,7 @@ function LevelBar({ level }: { level: Level }) {
         className="h-full rounded-full"
         style={{
           width: `${percent}%`,
-          background:
-            "linear-gradient(90deg, var(--accent), rgba(127,87,241,.6))",
+          background: "linear-gradient(90deg, var(--accent), rgba(127,87,241,.6))",
         }}
       />
     </div>
@@ -164,19 +171,12 @@ export default function StackView() {
     const q = query.trim().toLowerCase();
     return DATA.filter((t) => {
       const byCat = cat === "Todas" || t.category === cat;
-      const haystack = (
-        t.name +
-        " " +
-        t.use +
-        " " +
-        (t.tags || []).join(" ")
-      ).toLowerCase();
+      const haystack = (t.name + " " + t.use + " " + (t.tags || []).join(" ")).toLowerCase();
       const byText = !q || haystack.includes(q);
       return byCat && byText;
     });
   }, [query, cat]);
 
-  // Group by category for layout
   const grouped = useMemo(() => {
     const g = new Map<Tech["category"], Tech[]>();
     CATEGORIES.forEach((c) => g.set(c, []));
@@ -229,10 +229,9 @@ export default function StackView() {
         </div>
       </div>
 
-      {/* Leyenda de niveles */}
+      {/* Leyenda */}
       <div className="mb-4 text-xs text-foreground/60">
-        <span className="font-semibold">Leyenda:</span> Básico (1–2), Intermedio (3),
-        Avanzado (4), Experto (5).
+        <span className="font-semibold">Leyenda:</span> Básico (1–2), Intermedio (3), Avanzado (4), Experto (5).
       </div>
 
       {/* Grupos */}
@@ -242,27 +241,17 @@ export default function StackView() {
             <ul className="space-y-4">
               {items.map((t) => (
                 <li key={`${grupo}-${t.name}`} className="rounded-xl border border-border bg-card/70 p-4">
-                  {/* Cabezera */}
+                  {/* Cabecera */}
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-wrap items-center gap-2">
+                      {/* Chip grande (único) */}
                       <span
-                        className="rounded-md border px-2.5 py-1 text-xs font-semibold"
+                        className="chip rounded-md border px-2.5 py-1 text-xs font-semibold"
                         style={chipStyle(t.name)}
                       >
                         {t.name}
                       </span>
-                      {t.tags?.length ? (
-                        <div className="flex flex-wrap gap-1">
-                          {t.tags.slice(0, 3).map((tg) => (
-                            <span
-                              key={tg}
-                              className="rounded-full bg-foreground/10 px-2 py-0.5 text-[10px]"
-                            >
-                              {tg}
-                            </span>
-                          ))}
-                        </div>
-                      ) : null}
+                      {/* ⬇️ MINI-CHIPS REMOVIDOS */}
                     </div>
 
                     <div className="grid grid-cols-2 items-center gap-3 sm:w-80">
@@ -303,23 +292,13 @@ export default function StackView() {
         ))}
       </div>
 
-      {/* Pipeline de despliegue y prácticas */}
-      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <SectionCard title="Pipeline típico">
-          <ol className="space-y-2 text-sm text-foreground/80 list-decimal pl-5">
-            <li>Dev local con Node/.NET + Docker (cuando aplica).</li>
-            <li>GitFlow ligero: feature branches → PR → code review.</li>
-            <li>CI: build y pruebas (GitHub Actions).</li>
-            <li>CD: deploy a Vercel/Netlify (front) y Railway (APIs/BBDD).</li>
-            <li>Observabilidad básica: logs, métricas del proveedor y alertas simples.</li>
-          </ol>
-        </SectionCard>
-
+      {/* En aprendizaje / radar */}
+      <div className="mt-6">
         <SectionCard title="En aprendizaje / radar">
           <ul className="space-y-2 text-sm text-foreground/80">
-            <li>Testing E2E moderno (Playwright) y contract-testing para APIs.</li>
-            <li>Container hardening y mejores prácticas de seguridad en .NET.</li>
-            <li>Mejorar monitoreo con OpenTelemetry y trazas distribuidas.</li>
+            <li>Aprender más de AWS.</li>
+            <li>Aprender más patrones de diseño.</li>
+            <li>Seguir mejorando mi scraping web.</li>
           </ul>
         </SectionCard>
       </div>

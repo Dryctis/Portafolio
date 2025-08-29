@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ===== Base (fallback) ===== */
+/* ===== Base ===== */
 :root{
   --background:#f6f7fb;
   --foreground:#0f172a;
@@ -10,8 +10,8 @@
 
   --accent:#22d3a6;
   --accent-2: color-mix(in oklab, var(--accent) 70%, white);
-  --on-accent:#ffffff;        /* ← texto sobre el color de acento */
-  --glow-aux:#60efff;         /* auxiliar para brillos */
+  --on-accent:#ffffff;
+  --glow-aux:#60efff;
 }
 .dark{
   --background:#0b0b1e;
@@ -19,10 +19,9 @@
   --card:rgba(255,255,255,0.06);
   --border:rgba(255,255,255,0.12);
   --muted:rgba(255,255,255,0.72);
-  --on-accent:#ffffff;
 }
 
-/* ===== Mapeo Tailwind v4 (inline theme) ===== */
+/* Tailwind v4 → tokens */
 @theme inline{
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -36,9 +35,9 @@
 html{ scroll-behavior:smooth; }
 ::selection{ background:var(--accent); color:#0b0b1e; }
 
-/* ===== Tema: Pumpkin + Charcoal ===== */
+/* ===== Temas ===== */
 .theme-pumpkin{
-  --accent:#fe7f2d;      /* Pumpkin */
+  --accent:#fe7f2d;
   --accent-2:#ffb27a;
   --on-accent:#ffffff;
   --glow-aux:#335a70;
@@ -46,31 +45,22 @@ html{ scroll-behavior:smooth; }
   --background:#fff4ec;
   --foreground:#1b2430;
   --card:#ffffff;
-  --border:rgba(2,6,23,0.08);
-  --muted:rgba(2,6,23,0.6);
 }
 .theme-pumpkin.dark{
-  --background:#233d4d;  /* Charcoal */
+  --background:#233d4d;
   --foreground:#eaf2f7;
   --card:rgba(255,255,255,0.06);
   --border:rgba(255,255,255,0.14);
   --muted:rgba(255,255,255,0.72);
   --glow-aux:#99b6c7;
-  --on-accent:#ffffff;
 }
 
-/* ===== Tema: Deep Blue (light por defecto + dark coherente con el hero) ===== */
 .theme-deepblue{
-  /* Light */
   --background:#f5f7fb;
   --foreground:#0b1220;
   --card:#ffffff;
-  --border:rgba(2,6,23,0.08);
-  --muted:rgba(2,6,23,0.6);
-
-  /* Acentos inspirados en el hero */
-  --accent:#8b5cf6;     /* violeta */
-  --accent-2:#22d3ee;   /* cian */
+  --accent:#8b5cf6;
+  --accent-2:#22d3ee;
   --on-accent:#ffffff;
 }
 .theme-deepblue.dark{
@@ -79,29 +69,32 @@ html{ scroll-behavior:smooth; }
   --card:rgba(255,255,255,0.06);
   --border:rgba(255,255,255,0.12);
   --muted:rgba(255,255,255,0.72);
-
-  --accent:#8b5cf6;
-  --accent-2:#22d3ee;
-  --on-accent:#ffffff;
 }
 
 /* ===== Fondo / Ambientación ===== */
 
-/* Grano sutil de fondo */
+/* grano sutil (muy bajo para no lavar el canvas) */
 .neon-surface{
-  position: relative;
-  isolation: isolate;
-  background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:center;
-  background-size:cover;
+  position:relative;
+  isolation:isolate;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='1200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.02'/%3E%3C/svg%3E")
+    no-repeat center / cover;
 }
 
-/* Focos/glows principales (se adaptan a las vars del tema) */
-.neon-surface::before{
+/* base común para overlays */
+.neon-surface::before,
+.neon-grid::before,
+.neon-vignette::after{
   content:"";
-  position:fixed; inset:0; z-index:0; pointer-events:none;
+  position:fixed;
+  inset:0;
+  pointer-events:none;
+}
+
+/* glows principales — sin blur para efecto “glass” real */
+.neon-surface::before{
+  z-index:0;
   background:
     radial-gradient(70rem 34rem at 14% 6%,
       color-mix(in oklab, var(--accent) 26%, transparent) 0%, transparent 70%),
@@ -109,51 +102,67 @@ html{ scroll-behavior:smooth; }
       color-mix(in oklab, var(--accent-2) 22%, transparent) 0%, transparent 72%),
     radial-gradient(85rem 30rem at 50% -6%,
       color-mix(in oklab, var(--accent) 16%, transparent) 0%, transparent 72%);
-  filter: blur(38px) saturate(120%);
-  opacity:.60;
+  filter: saturate(115%);      /* ← sin blur */
+  opacity:.16;                 /* ← mucho más transparente */
 }
 
-/* Grid sutil (scanlines + puntos) */
+/* grid sutil — muy tenue y sin mezclar fuerte */
 .neon-grid::before{
-  content:"";
-  position:fixed; inset:0; z-index:1; pointer-events:none;
+  z-index:1;
   background:
-    repeating-linear-gradient(0deg, rgba(0,0,0,.04) 0 1px, transparent 1px 3px),
-    radial-gradient(rgba(0,0,0,.04) 1px, transparent 1px);
+    repeating-linear-gradient(0deg, rgba(0,0,0,.03) 0 1px, transparent 1px 3px),
+    radial-gradient(rgba(0,0,0,.03) 1px, transparent 1px);
   background-size: 100% 12px, 18px 18px;
-  mix-blend-mode: overlay;
-  opacity:.18; /* un poco más bajo en light */
+  mix-blend-mode: normal;      /* ← quitamos overlay para no “lavar” */
+  opacity:.06;
   -webkit-mask-image: radial-gradient(130% 110% at 50% 20%, #000 60%, transparent 100%);
           mask-image: radial-gradient(130% 110% at 50% 20%, #000 60%, transparent 100%);
 }
 
-/* Viñeta */
+/* viñeta — apenas perceptible */
 .neon-vignette::after{
-  content:"";
-  position:fixed; inset:0; z-index:2; pointer-events:none;
-  background: radial-gradient(120% 120% at 50% 50%, transparent 58%, rgba(0,0,0,.12) 100%);
+  z-index:2;
+  background: radial-gradient(120% 120% at 50% 50%, transparent 60%, rgba(0,0,0,.04) 100%);
 }
 
-/* Ajustes en modo oscuro */
-.dark .neon-surface::before{ filter: blur(42px) saturate(135%); opacity:.85; }
-.dark .neon-grid::before{ opacity:.26; }
+/* ajustes dark */
+.dark .neon-surface::before{ filter:saturate(125%); opacity:.28; }
+.dark .neon-grid::before{ opacity:.10; }
 .dark .neon-vignette::after{
-  background: radial-gradient(120% 120% at 50% 50%, transparent 56%, rgba(0,0,0,.28) 100%);
+  background: radial-gradient(120% 120% at 50% 50%, transparent 58%, rgba(0,0,0,.10) 100%);
 }
-.sr-only{
-  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
-  overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
-}
-.focus\:not-sr-only:focus{
-  position:static; width:auto; height:auto; margin:0; overflow:visible; clip:auto; white-space:normal;
-}
-:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; }
 
-@media (prefers-reduced-motion: reduce){
-  *{
-    animation-duration:0.001ms !important;
-    animation-iteration-count:1 !important;
-    transition-duration:0.001ms !important;
-    scroll-behavior:auto !important;
-  }
+/* contenedor del canvas OGL (Prism) */
+.prism-container{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  pointer-events:none;
+}
+
+/* ===== Utilidades para tarjetas “glass” (opcional) ===== */
+/* No cambian variables ni rompen estilos existentes */
+.card-translucent{
+  background-color: color-mix(in oklab, var(--card) 70%, transparent);
+  border-color: color-mix(in oklab, var(--border) 70%, transparent);
+  backdrop-filter: blur(2px) saturate(120%);
+}
+.card-transparent{
+  background-color: color-mix(in oklab, var(--card) 55%, transparent);
+  border-color: color-mix(in oklab, var(--border) 55%, transparent);
+  backdrop-filter: blur(2px) saturate(120%);
+}
+
+/* ===== Opt-out de overlays dentro de la página con Prism de fondo ===== */
+.prism-page .neon-surface::before,
+.prism-page .neon-grid::before,
+.prism-page .neon-vignette::after{
+  display:none !important;
+}
+
+/* Safety extra: si algún otro bloque con clase “neon-*” añade pseudo-overlays */
+.prism-page [class*="neon-"]::before,
+.prism-page [class*="neon-"]::after{
+  display:none !important;
 }

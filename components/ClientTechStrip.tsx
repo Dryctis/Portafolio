@@ -8,19 +8,31 @@ const TechStrip = dynamic(() => import("@/components/TechStrip"), {
   ssr: false,
 });
 
-// Props extra para controlar el diferido
+// ——— Tipos auxiliares (sin usar `any`) ———
 type DeferMode = "visible" | "idle" | "both" | "none";
 
-type Props = {
+interface IdleDeadline {
+  didTimeout: boolean;
+  timeRemaining: () => number;
+}
+type IdleCallback = (deadline: IdleDeadline) => void;
+type RequestIdleCallback = (cb: IdleCallback, opts?: { timeout?: number }) => number;
+type CancelIdleCallback = (handle: number) => void;
+
+// Tomamos los props del componente real (sin escribir `any` nosotros)
+type TechStripProps = React.ComponentProps<typeof TechStrip>;
+
+type BaseProps = {
   /** Montaje diferido: visible (IO), idle (requestIdleCallback) o ambos */
   defer?: DeferMode;
   /** Margen del IntersectionObserver (ej. "160px") */
   rootMargin?: string;
   /** Placeholder mientras difiere */
   placeholder?: ReactNode;
-  /** Passthrough de props originales del TechStrip */
-  [key: string]: any;
 };
+
+// Permitimos pasar cualquier prop válida para TechStrip sin `any`
+type Props = BaseProps & Partial<TechStripProps>;
 
 export default function ClientTechStrip({
   defer = "both",
@@ -31,7 +43,7 @@ export default function ClientTechStrip({
       aria-hidden
     />
   ),
-  ...props
+  ...rest
 }: Props) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [ready, setReady] = useState<boolean>(defer === "none");
@@ -44,18 +56,20 @@ export default function ClientTechStrip({
 
     const makeReady = () => setReady(true);
 
-    // Defer por inactividad (idle)
+    // Defer por inactividad (idle) — sin @ts-ignore, con tipos propios
     if (defer === "idle" || defer === "both") {
-      // @ts-ignore
-      if (typeof window.requestIdleCallback === "function") {
-        // @ts-ignore
-        idleId = window.requestIdleCallback(makeReady, { timeout: 1500 });
+      const w = window as unknown as {
+        requestIdleCallback?: RequestIdleCallback;
+        cancelIdleCallback?: CancelIdleCallback;
+      };
+      if (typeof w.requestIdleCallback === "function") {
+        idleId = w.requestIdleCallback(makeReady, { timeout: 1500 });
       } else {
         idleId = window.setTimeout(makeReady, 200);
       }
     }
 
-    // Defer por visibilidad (IO)
+    // Defer por visibilidad (IntersectionObserver)
     if (defer === "visible" || defer === "both") {
       const el = ref.current;
       if (el) {
@@ -73,10 +87,18 @@ export default function ClientTechStrip({
     }
 
     return () => {
-      if (idleId) window.clearTimeout(idleId);
+      if (idleId !== null) {
+        // Intentamos cancelar idle si existe; si no, limpiamos timeout
+        const w = window as unknown as { cancelIdleCallback?: CancelIdleCallback };
+        if (typeof w.cancelIdleCallback === "function") {
+          w.cancelIdleCallback(idleId);
+        } else {
+          window.clearTimeout(idleId);
+        }
+      }
       obs?.disconnect();
     };
   }, [defer, rootMargin, ready]);
 
-  return <div ref={ref}>{ready ? <TechStrip {...props} /> : placeholder}</div>;
+  return <div ref={ref}>{ready ? <TechStrip {...(rest as TechStripProps)} /> : placeholder}</div>;
 }

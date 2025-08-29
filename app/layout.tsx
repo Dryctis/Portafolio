@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { Sora, Geist_Mono } from "next/font/google";
 import Navbar from "@/components/Navbar";
-import SkipLink from "@/components/SkipLink";
 
 const sora = Sora({ subsets: ["latin"], weight: ["400","600","800"], variable: "--font-sans" });
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -44,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         ].join(" ")}
       >
         {/* Déjalo global. El propio Navbar decide si se muestra o no en "/" */}
-        <SkipLink />
+        
         <Navbar />
         {children}
       </body>
