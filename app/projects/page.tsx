@@ -1,13 +1,11 @@
-// app/projects/page.tsx
+
 import type { Metadata } from "next";
 import Link from "next/link";
 import BackButton from "@/components/BackButton";
 import { projects, type Project } from "@/data/projects";
 
 export const metadata: Metadata = { title: "Proyectos | Allan-Dev" };
-
-// ✅ NEXT 15 exige literales aquí (número o false), no expresiones:
-export const revalidate = 3600; // 1h
+export const revalidate = 3600; 
 
 type GhRepo = {
   name: string;
@@ -15,7 +13,7 @@ type GhRepo = {
   description: string | null;
   language: string | null;
   stargazers_count: number;
-  pushed_at: string; // ISO
+  pushed_at: string; 
   html_url: string;
   homepage?: string | null;
 };
@@ -33,8 +31,8 @@ type CuratedRepo = GhRepo & { tag: string };
 async function getRepo(owner: string, repo: string): Promise<GhRepo | null> {
   try {
     const res = await fetch(`https://api.github.com/repos/${owner}/${repo}`, {
-      // headers: { Authorization: `Bearer ${process.env.GITHUB_TOKEN}` }, // opcional
-      next: { revalidate }, // usa el literal exportado
+      
+      next: { revalidate }, 
     });
     if (!res.ok) return null;
     return (await res.json()) as GhRepo;
@@ -74,7 +72,7 @@ export default async function ProjectsPage() {
         Casos seleccionados con código y despliegue.
       </p>
 
-      {/* Destacados (de tu data local) */}
+      
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12" role="list" aria-label="Proyectos destacados">
         {projects.map((p: Project) => {
           const href = p.live || p.repo || "";
@@ -128,7 +126,7 @@ export default async function ProjectsPage() {
         })}
       </div>
 
-      {/* Otros del repositorio (curados) */}
+      
       <h2 className="text-xl font-semibold mb-4">Otros del repositorio</h2>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-5" role="list" aria-label="Otros repositorios">
         {curated.map((repo) => {

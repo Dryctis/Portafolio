@@ -13,7 +13,6 @@ import { site } from "@/data/site";
 import { projects } from "@/data/projects";
 import { stack } from "@/data/stack";
 
-/* ---------- Colores representativos por tecnología (para Stack) ---------- */
 const TECH_COLORS: Record<string, string> = {
   typescript: "#3178c6",
   javascript: "#f7df1e",
@@ -47,7 +46,7 @@ const TECH_COLORS: Record<string, string> = {
   selenium: "#43B02A",
   expressjs: "#000000",
   postman: "#ff6c37",
-  // bonus:
+ 
   net: "#512bd4",
 };
 
@@ -70,7 +69,7 @@ function hexToRgba(hex: string, alpha = 1): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-/* ---------- Chips morados sólo para "Sobre mí" (sin fijar color de texto) ---------- */
+
 const PURPLE = "#7c3aed";
 function purpleChipStyle(): React.CSSProperties {
   return {
@@ -80,7 +79,7 @@ function purpleChipStyle(): React.CSSProperties {
   };
 }
 
-/* ---------- Chips del Stack (sin fijar color de texto) ---------- */
+
 function chipStyle(label: string): React.CSSProperties {
   const key = norm(label);
   const base = TECH_COLORS[key];
@@ -96,7 +95,7 @@ export default function DashboardGrid() {
   return (
     <div className="relative">
       <div className="relative z-[1] mx-auto max-w-[115rem] 2xl:max-w-[120rem] px-6 lg:px-10 pt-6 lg:pt-8 pb-10 lg:pb-12">
-        {/* Carrusel */}
+       
         <div className="mb-3 rounded-lg border border-transparent bg-transparent px-2 py-1">
           <ClientTechStrip
             speed={28}
@@ -110,9 +109,9 @@ export default function DashboardGrid() {
           />
         </div>
 
-        {/* GRID */}
+      
         <div className="grid grid-cols-1 xl:grid-cols-12 gap-6 lg:gap-6">
-          {/* Izquierda */}
+        
           <aside
             className="xl:col-span-3"
             style={{ contentVisibility: "auto", containIntrinsicSize: "700px" }}
@@ -154,7 +153,7 @@ export default function DashboardGrid() {
             </div>
           </aside>
 
-          {/* Centro */}
+          
           <section
             className="xl:col-span-6 grid gap-6 lg:gap-6"
             style={{ contentVisibility: "auto", containIntrinsicSize: "1200px" }}
@@ -237,7 +236,7 @@ export default function DashboardGrid() {
             </div>
           </section>
 
-          {/* Derecha */}
+          
           <aside
             className="xl:col-span-3 grid gap-6 lg:gap-6"
             style={{ contentVisibility: "auto", containIntrinsicSize: "800px" }}

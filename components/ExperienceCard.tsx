@@ -1,4 +1,3 @@
-// components/ExperienceCard.tsx
 "use client";
 
 import * as React from "react";
@@ -13,7 +12,7 @@ export default function ExperienceCard({
   className = "",
   title = "Experiencia / Highlights",
   items = [
-    "+2 años desarrollando aplicaciones Web (Freelance)",
+    "+4 años desarrollando aplicaciones Web (Freelance)",
     "Desarrollo completo y despliegues en la nube (Vercel/Netlify/Railway/Azure)",
     "APIs seguras (JWT/OAuth2), pruebas con Postman/Swagger",
     "Enfoque en rendimiento, accesibilidad y UX",
